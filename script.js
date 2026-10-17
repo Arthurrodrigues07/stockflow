@@ -7,12 +7,18 @@ const MAX_MONEY=999999999;
 const $=id=>document.getElementById(id);
 const money=value=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(value);
 const number=value=>new Intl.NumberFormat("pt-BR").format(value);
-const uid=()=>crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2)}`;
+const uid=()=>{
+if(typeof crypto!=="undefined"&&typeof crypto.randomUUID==="function"){
+return crypto.randomUUID();
+}
+return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
 const today=()=>new Date().toISOString();
 const dateLabel=value=>new Date(value).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"});
 const dayKey=value=>{const d=new Date(value);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
 const validMoney=value=>typeof value==="number"&&Number.isFinite(value)&&value>=0&&value<=MAX_MONEY;
 const validQuantity=value=>Number.isSafeInteger(value)&&value>=0&&value<=MAX_QUANTITY;
+const validId=value=>typeof value==="string"&&value.length>=1&&value.length<=100&&/^[a-zA-Z0-9_-]+$/.test(value);
 const escapeHTML=value=>String(value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 const emptyRow=(columns,message)=>`<tr><td colspan="${columns}" class="empty-message">${escapeHTML(message)}</td></tr>`;
 
@@ -27,7 +33,7 @@ for(const key of ["products","sales","movements"])if(!Array.isArray(data[key])||
 const ids=new Set();
 const codes=new Set();
 for(const p of data.products){
-if(!p||typeof p.id!=="string"||!p.id||ids.has(p.id)||typeof p.name!=="string"||!p.name.trim()||p.name.length>100||typeof p.code!=="string"||!p.code.trim()||p.code.length>40||typeof p.category!=="string"||!p.category.trim()||p.category.length>60||!validMoney(p.cost)||!validMoney(p.price)||!validQuantity(p.quantity)||!validQuantity(p.minStock))throw Error("Produto inválido no backup.");
+if(!p||!validId(p.id)||ids.has(p.id)||typeof p.name!=="string"||!p.name.trim()||p.name.length>100||typeof p.code!=="string"||!p.code.trim()||p.code.length>40||typeof p.category!=="string"||!p.category.trim()||p.category.length>60||!validMoney(p.cost)||!validMoney(p.price)||!validQuantity(p.quantity)||!validQuantity(p.minStock))throw Error("Produto inválido no backup.");
 ids.add(p.id);
 const code=p.code.trim().toLowerCase();
 if(codes.has(code))throw Error("Existem códigos de produtos duplicados.");
@@ -35,18 +41,18 @@ codes.add(code);
 }
 const saleIds=new Set();
 for(const s of data.sales){
-if(!s||typeof s.id!=="string"||!s.id||saleIds.has(s.id)||typeof s.date!=="string"||!Number.isFinite(Date.parse(s.date))||!Array.isArray(s.items)||!s.items.length||s.items.length>10000||!validMoney(s.total))throw Error("Venda inválida no backup.");
+if(!s||!validId(s.id)||saleIds.has(s.id)||typeof s.date!=="string"||!Number.isFinite(Date.parse(s.date))||!Array.isArray(s.items)||!s.items.length||s.items.length>10000||!validMoney(s.total))throw Error("Venda inválida no backup.");
 saleIds.add(s.id);
 let sum=0;
 for(const item of s.items){
-if(!item||typeof item.productId!=="string"||typeof item.name!=="string"||!item.name.trim()||item.name.length>100||!validQuantity(item.quantity)||item.quantity===0||!validMoney(item.price)||!validMoney(item.cost))throw Error("Item de venda inválido.");
+if(!item||!validId(item.productId)||typeof item.name!=="string"||!item.name.trim()||item.name.length>100||!validQuantity(item.quantity)||item.quantity===0||!validMoney(item.price)||!validMoney(item.cost))throw Error("Item de venda inválido.");
 sum+=Math.round(item.price*100)*item.quantity;
 }
 if(!Number.isSafeInteger(sum)||Math.abs(sum-Math.round(s.total*100))>1)throw Error("Total de venda inconsistente.");
 }
 const movementIds=new Set();
 for(const m of data.movements){
-if(!m||typeof m.id!=="string"||!m.id||movementIds.has(m.id)||typeof m.productId!=="string"||typeof m.productName!=="string"||!m.productName.trim()||typeof m.date!=="string"||!Number.isFinite(Date.parse(m.date))||!["entry","exit","adjustment","sale","initial"].includes(m.type)||!validQuantity(m.quantity)||typeof m.note!=="string"||m.note.length>300)throw Error("Movimentação inválida.");
+if(!m||!validId(m.id)||movementIds.has(m.id)||!validId(m.productId)||typeof m.productName!=="string"||!m.productName.trim()||typeof m.date!=="string"||!Number.isFinite(Date.parse(m.date))||!["entry","exit","adjustment","sale","initial"].includes(m.type)||!validQuantity(m.quantity)||typeof m.note!=="string"||m.note.length>300)throw Error("Movimentação inválida.");
 movementIds.add(m.id);
 }
 return true;
@@ -347,6 +353,14 @@ toast("O valor da venda excede o limite permitido.",true);return;
 }
 confirmAction(`Finalizar venda de ${money(amount(totalCents))}? O estoque será atualizado automaticamente.`,()=>{
 const next=cloneState();
+for(const item of items){
+const product=next.products.find(p=>p.id===item.productId);
+if(!product||!validQuantity(item.quantity)||item.quantity===0||item.quantity>product.quantity){
+toast("Estoque insuficiente. Confira o carrinho.",true);
+renderSales();
+return;
+}
+}
 const saleId=uid();
 const date=today();
 for(const item of items){
