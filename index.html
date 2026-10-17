@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#f5f7fb">
+<meta name="description" content="StockFlow - Sistema de gestão de estoque, produtos e vendas.">
+<title>StockFlow | Gestão Comercial</title>
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-brand">
+<a href="#" class="brand" data-page="dashboard"><span class="brand-icon">SF</span><span>StockFlow<small>GESTÃO COMERCIAL</small></span></a>
+<button class="icon-button sidebar-close" id="closeSidebar" type="button" aria-label="Fechar menu">&times;</button>
+</div>
+<nav class="sidebar-nav" aria-label="Menu principal">
+<p class="nav-label">PRINCIPAL</p>
+<button class="nav-link active" data-page="dashboard" type="button"><span class="nav-icon">▦</span>Dashboard</button>
+<button class="nav-link" data-page="products" type="button"><span class="nav-icon">▤</span>Produtos</button>
+<button class="nav-link" data-page="inventory" type="button"><span class="nav-icon">▥</span>Estoque</button>
+<p class="nav-label">COMERCIAL</p>
+<button class="nav-link" data-page="sales" type="button"><span class="nav-icon">▣</span>Nova venda</button>
+<button class="nav-link" data-page="history" type="button"><span class="nav-icon">◷</span>Histórico de vendas</button>
+<button class="nav-link" data-page="reports" type="button"><span class="nav-icon">▥</span>Relatórios</button>
+<p class="nav-label">SISTEMA</p>
+<button class="nav-link" data-page="settings" type="button"><span class="nav-icon">⚙</span>Configurações</button>
+</nav>
+<div class="sidebar-footer">
+<div class="local-storage-notice"><span class="online-dot"></span><div><strong>Armazenamento local</strong><small>Dados salvos neste navegador</small></div></div>
+<p>StockFlow v1.0</p>
+</div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="main-layout">
+<header class="topbar">
+<div class="topbar-left">
+<button class="icon-button menu-toggle" id="openSidebar" type="button" aria-label="Abrir menu">☰</button>
+<div class="breadcrumb"><span>StockFlow</span><span>/</span><strong id="breadcrumbTitle">Dashboard</strong></div>
+</div>
+<div class="topbar-right"><span class="topbar-date" id="currentDate"></span><span class="system-status"><span class="online-dot"></span>Sistema local</span></div>
+</header>
+<main class="main-content">
+<section class="page active" id="page-dashboard">
+<div class="page-header"><div><span class="eyebrow">VISÃO GERAL</span><h1>Dashboard</h1><p>Acompanhe o desempenho do seu negócio.</p></div><button class="btn btn-primary" id="dashboardNewSale" type="button">+ Registrar venda</button></div>
+<div class="stats-grid">
+<article class="stat-card"><div class="stat-heading"><span>Faturamento total</span><span class="stat-symbol">R$</span></div><strong id="statRevenue">R$ 0,00</strong><small>Valor bruto das vendas registradas</small></article>
+<article class="stat-card"><div class="stat-heading"><span>Vendas realizadas</span><span class="stat-symbol">▣</span></div><strong id="statSales">0</strong><small>Transações concluídas</small></article>
+<article class="stat-card"><div class="stat-heading"><span>Produtos cadastrados</span><span class="stat-symbol">▤</span></div><strong id="statProducts">0</strong><small>Itens no catálogo</small></article>
+<article class="stat-card"><div class="stat-heading"><span>Estoque baixo</span><span class="stat-symbol">!</span></div><strong id="statLowStock">0</strong><small>Produtos que precisam de atenção</small></article>
+</div>
+<div class="dashboard-grid">
+<article class="panel"><div class="panel-header"><div><h2>Faturamento recente</h2><p>Desempenho dos últimos sete dias</p></div></div><div class="chart-container" id="revenueChart"><p class="empty-message">Ainda não existem vendas para exibir.</p></div></article>
+<article class="panel"><div class="panel-header"><div><h2>Resumo do estoque</h2><p>Situação atual dos produtos</p></div></div><div class="inventory-summary" id="inventorySummary"><p class="empty-message">Nenhum produto cadastrado.</p></div></article>
+</div>
+<div class="dashboard-grid">
+<article class="panel"><div class="panel-header"><div><h2>Últimas vendas</h2><p>Transações mais recentes</p></div><button class="text-button" data-page="history" type="button">Ver todas →</button></div><div id="recentSales"><p class="empty-message">Nenhuma venda registrada.</p></div></article>
+<article class="panel"><div class="panel-header"><div><h2>Alertas de estoque</h2><p>Produtos com quantidade reduzida</p></div><button class="text-button" data-page="inventory" type="button">Ver estoque →</button></div><div id="stockAlerts"><p class="empty-message">Nenhum alerta no momento.</p></div></article>
+</div>
+</section>
+<section class="page" id="page-products">
+<div class="page-header"><div><span class="eyebrow">CATÁLOGO</span><h1>Produtos</h1><p>Cadastre e gerencie os produtos do negócio.</p></div><button class="btn btn-primary" id="newProductButton" type="button">+ Novo produto</button></div>
+<div class="toolbar"><div class="search-box"><span>⌕</span><input type="search" id="productSearch" placeholder="Pesquisar por nome, código ou categoria..." aria-label="Pesquisar produtos"></div><select id="productCategoryFilter" aria-label="Filtrar por categoria"><option value="all">Todas as categorias</option></select><span class="result-count" id="productCount">0 produtos</span></div>
+<div class="panel table-panel"><div class="table-wrapper"><table class="data-table"><thead><tr><th>Produto</th><th>Código</th><th>Categoria</th><th>Preço de custo</th><th>Preço de venda</th><th>Quantidade</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="productsTableBody"></tbody></table></div></div>
+</section>
+<section class="page" id="page-inventory">
+<div class="page-header"><div><span class="eyebrow">CONTROLE</span><h1>Estoque</h1><p>Acompanhe quantidades e movimentações dos produtos.</p></div><button class="btn btn-primary" id="newMovementButton" type="button">+ Movimentar estoque</button></div>
+<div class="mini-stats-grid">
+<article class="mini-stat"><span>Unidades em estoque</span><strong id="inventoryUnits">0</strong></article>
+<article class="mini-stat"><span>Produtos com estoque baixo</span><strong id="inventoryLow">0</strong></article>
+<article class="mini-stat"><span>Produtos esgotados</span><strong id="inventoryOut">0</strong></article>
+</div>
+<div class="panel section-panel"><div class="panel-header"><div><h2>Posição do estoque</h2><p>Quantidades disponíveis por produto</p></div></div><div class="toolbar"><div class="search-box"><span>⌕</span><input type="search" id="inventorySearch" placeholder="Pesquisar produtos..." aria-label="Pesquisar estoque"></div><select id="inventoryStatusFilter" aria-label="Filtrar situação"><option value="all">Todas as situações</option><option value="normal">Estoque normal</option><option value="low">Estoque baixo</option><option value="out">Esgotados</option></select></div><div class="table-wrapper"><table class="data-table"><thead><tr><th>Produto</th><th>Código</th><th>Quantidade</th><th>Estoque mínimo</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="inventoryTableBody"></tbody></table></div></div>
+<div class="panel section-panel"><div class="panel-header"><div><h2>Histórico de movimentações</h2><p>Entradas, saídas e ajustes realizados</p></div></div><div class="table-wrapper"><table class="data-table"><thead><tr><th>Data</th><th>Produto</th><th>Tipo</th><th>Quantidade</th><th>Observação</th></tr></thead><tbody id="movementsTableBody"></tbody></table></div></div>
+</section>
+<section class="page" id="page-sales">
+<div class="page-header"><div><span class="eyebrow">FRENTE DE VENDAS</span><h1>Registrar venda</h1><p>Selecione produtos e finalize uma nova venda.</p></div></div>
+<div class="sales-layout">
+<div class="panel sales-products-panel"><div class="panel-header"><div><h2>Selecionar produtos</h2><p>Adicione itens disponíveis ao carrinho</p></div></div><div class="search-box full-width"><span>⌕</span><input type="search" id="saleProductSearch" placeholder="Buscar produto por nome ou código..." aria-label="Buscar produto para venda"></div><div class="sale-products-list" id="saleProductsList"><p class="empty-message">Cadastre produtos para começar a vender.</p></div></div>
+<div class="panel cart-panel"><div class="panel-header"><div><h2>Resumo da venda</h2><p>Confira os itens antes de finalizar</p></div></div><div class="cart-items" id="cartItems"><p class="empty-message">Nenhum produto adicionado.</p></div><div class="cart-summary"><div class="summary-line"><span>Quantidade de itens</span><strong id="cartQuantity">0</strong></div><div class="summary-total"><span>Total da venda</span><strong id="cartTotal">R$ 0,00</strong></div><button class="btn btn-primary full-width" id="finishSaleButton" type="button">Finalizar venda</button><button class="btn btn-outline full-width" id="clearCartButton" type="button">Limpar carrinho</button></div></div>
+</div>
+</section>
+<section class="page" id="page-history">
+<div class="page-header"><div><span class="eyebrow">TRANSAÇÕES</span><h1>Histórico de vendas</h1><p>Consulte todas as vendas registradas no sistema.</p></div></div>
+<div class="toolbar"><div class="search-box"><span>⌕</span><input type="search" id="salesSearch" placeholder="Pesquisar venda por número ou produto..." aria-label="Pesquisar vendas"></div><input type="date" id="salesStartDate" aria-label="Data inicial"><input type="date" id="salesEndDate" aria-label="Data final"><button class="btn btn-outline" id="clearSalesFilters" type="button">Limpar filtros</button></div>
+<div class="panel table-panel"><div class="table-wrapper"><table class="data-table"><thead><tr><th>Número</th><th>Data</th><th>Itens</th><th>Total</th><th>Detalhes</th></tr></thead><tbody id="salesHistoryBody"></tbody></table></div></div>
+</section>
+<section class="page" id="page-reports">
+<div class="page-header"><div><span class="eyebrow">ANÁLISE</span><h1>Relatórios</h1><p>Analise os resultados e acompanhe o desempenho das vendas.</p></div></div>
+<div class="toolbar"><label for="reportPeriod" class="field-label">Período:</label><select id="reportPeriod"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="90">Últimos 90 dias</option><option value="all">Todo o período</option></select></div>
+<div class="stats-grid">
+<article class="stat-card"><div class="stat-heading"><span>Faturamento no período</span></div><strong id="reportRevenue">R$ 0,00</strong></article>
+<article class="stat-card"><div class="stat-heading"><span>Lucro bruto estimado</span></div><strong id="reportProfit">R$ 0,00</strong></article>
+<article class="stat-card"><div class="stat-heading"><span>Vendas no período</span></div><strong id="reportSalesCount">0</strong></article>
+<article class="stat-card"><div class="stat-heading"><span>Ticket médio</span></div><strong id="reportAverage">R$ 0,00</strong></article>
+</div>
+<div class="dashboard-grid">
+<article class="panel"><div class="panel-header"><div><h2>Faturamento por dia</h2><p>Distribuição das vendas no período</p></div></div><div class="chart-container" id="reportRevenueChart"></div></article>
+<article class="panel"><div class="panel-header"><div><h2>Produtos mais vendidos</h2><p>Classificação por quantidade vendida</p></div></div><div id="topProducts"></div></article>
+</div>
+<div class="panel section-panel"><div class="panel-header"><div><h2>Resumo financeiro</h2><p>Valores calculados a partir das vendas registradas</p></div></div><div class="financial-summary"><div><span>Faturamento bruto</span><strong id="summaryRevenue">R$ 0,00</strong></div><div><span>Custo estimado dos produtos vendidos</span><strong id="summaryCosts">R$ 0,00</strong></div><div><span>Lucro bruto estimado</span><strong id="summaryProfit">R$ 0,00</strong></div></div><p class="disclaimer">O lucro bruto estimado não considera impostos, frete, taxas, despesas operacionais ou outros custos do negócio.</p></div>
+</section>
+<section class="page" id="page-settings">
+<div class="page-header"><div><span class="eyebrow">SISTEMA</span><h1>Configurações</h1><p>Gerencie seus dados e cópias de segurança.</p></div></div>
+<div class="settings-grid">
+<article class="panel settings-card"><div class="settings-icon">↓</div><h2>Exportar backup</h2><p>Baixe um arquivo JSON com produtos, movimentações e vendas registradas.</p><button class="btn btn-primary" id="exportBackupButton" type="button">Exportar dados</button></article>
+<article class="panel settings-card"><div class="settings-icon">↑</div><h2>Importar backup</h2><p>Restaure um arquivo JSON válido. Os dados atuais serão substituídos após confirmação.</p><button class="btn btn-outline" id="importBackupButton" type="button">Selecionar arquivo</button><input type="file" id="backupFileInput" accept=".json,application/json" hidden></article>
+</div>
+<article class="panel section-panel"><h2>Privacidade e armazenamento</h2><p class="settings-description">O StockFlow utiliza armazenamento local do navegador. Não é necessário criar uma conta e os dados não são sincronizados com outros dispositivos. Limpar os dados do navegador pode apagar os registros. Faça backups regularmente.</p><p class="settings-description">Este projeto é uma demonstração educacional de gestão comercial. Não substitui sistemas fiscais, contábeis ou de controle empresarial em produção.</p></article>
+</section>
+</main>
+</div>
+</div>
+<div class="modal-backdrop hidden" id="productModal" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
+<div class="modal"><div class="modal-header"><div><h2 id="productModalTitle">Novo produto</h2><p>Preencha as informações do produto.</p></div><button class="icon-button modal-close" data-close="productModal" type="button" aria-label="Fechar">&times;</button></div>
+<form id="productForm">
+<input type="hidden" id="productId">
+<div class="form-group"><label for="productName">Nome do produto *</label><input id="productName" type="text" maxlength="100" required placeholder="Ex.: Camiseta básica"></div>
+<div class="form-row"><div class="form-group"><label for="productCode">Código / SKU *</label><input id="productCode" type="text" maxlength="40" required placeholder="Ex.: CAM-001"></div><div class="form-group"><label for="productCategory">Categoria *</label><input id="productCategory" type="text" maxlength="60" required placeholder="Ex.: Vestuário"></div></div>
+<div class="form-row"><div class="form-group"><label for="productCost">Preço de custo (R$) *</label><input id="productCost" type="number" min="0" max="999999999" step="0.01" required placeholder="0,00"></div><div class="form-group"><label for="productPrice">Preço de venda (R$) *</label><input id="productPrice" type="number" min="0" max="999999999" step="0.01" required placeholder="0,00"></div></div>
+<div class="form-row"><div class="form-group"><label for="productQuantity">Quantidade inicial *</label><input id="productQuantity" type="number" min="0" max="999999999" step="1" required placeholder="0"></div><div class="form-group"><label for="productMinStock">Estoque mínimo *</label><input id="productMinStock" type="number" min="0" max="999999999" step="1" required value="5"></div></div>
+<div class="form-actions"><button class="btn btn-outline" data-close="productModal" type="button">Cancelar</button><button class="btn btn-primary" type="submit">Salvar produto</button></div>
+</form></div>
+</div>
+<div class="modal-backdrop hidden" id="movementModal" role="dialog" aria-modal="true" aria-labelledby="movementModalTitle">
+<div class="modal"><div class="modal-header"><div><h2 id="movementModalTitle">Movimentar estoque</h2><p>Registre uma entrada, saída ou ajuste de quantidade.</p></div><button class="icon-button modal-close" data-close="movementModal" type="button" aria-label="Fechar">&times;</button></div>
+<form id="movementForm">
+<div class="form-group"><label for="movementProduct">Produto *</label><select id="movementProduct" required><option value="">Selecione um produto</option></select></div>
+<div class="form-row"><div class="form-group"><label for="movementType">Tipo *</label><select id="movementType" required><option value="entry">Entrada</option><option value="exit">Saída</option><option value="adjustment">Ajuste de saldo</option></select></div><div class="form-group"><label for="movementQuantity">Quantidade *</label><input id="movementQuantity" type="number" min="1" max="999999999" step="1" required placeholder="0"></div></div>
+<p class="form-help" id="movementHelp">Informe a quantidade de unidades que entrarão no estoque.</p>
+<div class="form-group"><label for="movementNote">Observação</label><textarea id="movementNote" rows="3" maxlength="300" placeholder="Motivo da movimentação..."></textarea></div>
+<div class="form-actions"><button class="btn btn-outline" data-close="movementModal" type="button">Cancelar</button><button class="btn btn-primary" type="submit">Registrar movimentação</button></div>
+</form></div>
+</div>
+<div class="modal-backdrop hidden" id="saleDetailsModal" role="dialog" aria-modal="true" aria-labelledby="saleDetailsTitle">
+<div class="modal"><div class="modal-header"><div><h2 id="saleDetailsTitle">Detalhes da venda</h2><p id="saleDetailsDate"></p></div><button class="icon-button modal-close" data-close="saleDetailsModal" type="button" aria-label="Fechar">&times;</button></div><div id="saleDetailsContent"></div><div class="form-actions"><button class="btn btn-outline" data-close="saleDetailsModal" type="button">Fechar</button></div></div>
+</div>
+<div class="modal-backdrop hidden" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+<div class="modal confirm-dialog"><div class="modal-header"><div><h2 id="confirmModalTitle">Confirmar ação</h2><p id="confirmMessage">Deseja continuar?</p></div><button class="icon-button modal-close" data-close="confirmModal" type="button" aria-label="Fechar">&times;</button></div><div class="form-actions"><button class="btn btn-outline" data-close="confirmModal" type="button">Cancelar</button><button class="btn btn-danger" id="confirmActionButton" type="button">Confirmar</button></div></div>
+</div>
+<div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
+</body>
+</html>
